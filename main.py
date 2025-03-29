@@ -2,6 +2,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.pipeline import make_pipeline
 
+from g4f.client import Client
+
+client = Client()
+
 class EnhancedPromptClassifier:
     def __init__(self):
         self.model = make_pipeline(
@@ -92,20 +96,35 @@ class EnhancedPromptClassifier:
 # Usage with more test cases
 classifier = EnhancedPromptClassifier()
 
-test_prompts = [
-    "What's the current temperature in Tokyo?",
-    "Explain the proof of Fermat's Last Theorem",
-    "Today's NASDAQ index value",
-    "Compare current US and EU climate policies",
-    "How many planets are in our solar system?",
-    "Interpret the latest employment statistics",
-    "Why do leaves change color in fall?",
-    "Latest iPhone model specifications",
-    "Explain the Riemann Hypothesis",
-    "Current conflicts in the Middle East"
-]
-
-print("Prompt Classification Results:")
-for prompt in test_prompts:
-    print(f"'{prompt[:50]}{'...' if len(prompt)>50 else ''}'")
-    print(f"→ {classifier.predict(prompt)}\n")
+while True:
+    p=input("prompt: ")
+    res=classifier.predict(p)
+    print(f"QUERY TYPE: {res}")
+    if res=="easy":
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": p}],
+            web_search=False
+        )
+        print(response.choices[0].message.content)
+    if res=="easy_realtime":
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": p}],
+            web_search=True
+        )
+        print(response.choices[0].message.content)
+    if res=="tough":
+        response = client.chat.completions.create(
+            model="deepseek-r1",
+            messages=[{"role": "user", "content": p}],
+            web_search=False
+        )
+        print(response.choices[0].message.content)
+    if res=="tough_realtime":
+        response = client.chat.completions.create(
+            model="deepseek-r1",
+            messages=[{"role": "user", "content": p}],
+            web_search=True
+        )
+        print(response.choices[0].message.content)
